@@ -83,14 +83,12 @@ server <- function(input, output) {
     })
     
     output$download <- downloadHandler(
-        filename <- 'plot.png',
-        # content
-        content = function(file){
-            # create plot
-            export(p = mtcars_plot(), file = 'tempPlot.png')
-            # hand over the file
-            file.copy('tempPlot.png',file)
-        })
+        filename <- 'Plot.png',
+        content = function(file) {
+            export(p = mtcars_plot(), file = 'TempPlot.png')
+            file.copy('TempPlot.png', file)
+        }
+    )
     
 }
 
