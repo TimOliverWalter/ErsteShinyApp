@@ -2,6 +2,7 @@ library(shiny)
 library(shinythemes)
 library(plotly)
 library(datasets)
+library(webshot)
 
 ui <- fluidPage(theme = shinytheme("superhero"),
                 navbarPage(
@@ -34,12 +35,13 @@ ui <- fluidPage(theme = shinytheme("superhero"),
                     ),
                     tabPanel(
                         "Mtcars Datensatz",
+                        downloadButton("download"),
                         mainPanel(plotlyOutput("mtcars_data"))
                     )
                 ))
 
 server <- function(input, output) {
-    output$iris_data <- renderPlotly({
+    iris_plot <- reactive({
         plot <- plot_ly(
             x = iris[, input$var_x],
             y = iris[, input$var_y],
@@ -53,7 +55,7 @@ server <- function(input, output) {
             )
     })
     
-    output$mtcars_data <- renderPlotly({
+    mtcars_plot <- reactive({
         plot <- plot_ly(
             x = mtcars[, "wt"],
             y = mtcars[, "hp"],
@@ -70,8 +72,26 @@ server <- function(input, output) {
                 yaxis = list(title = 'Horsepower'),
                 zaxis = list(title = 'Mile Time')
             ))
-        
     })
+    
+    output$iris_data <- renderPlotly({
+        iris_plot()
+    })
+    
+    output$mtcars_data <- renderPlotly({
+        mtcars_plot()
+    })
+    
+    output$download <- downloadHandler(
+        filename <- 'plot.png',
+        # content
+        content = function(file){
+            # create plot
+            export(p = mtcars_plot(), file = 'tempPlot.png')
+            # hand over the file
+            file.copy('tempPlot.png',file)
+        })
+    
 }
 
 shinyApp(ui = ui, server = server)
