@@ -6,7 +6,7 @@ library(htmlwidgets)
 library(dplyr)
 
 fifa19_data <-
-    read.csv("C:/__Meine_Daten/ErsteShinyApp/ErsteShinyApp/data.csv")
+    read.csv("C:/__MeineDaten/ErsteShinyApp/data.csv")
 
 ui <- fluidPage(theme = shinytheme("superhero"),
                 navbarPage(
@@ -49,7 +49,7 @@ ui <- fluidPage(theme = shinytheme("superhero"),
                             "Spieleralter:",
                             min = 16,
                             max = 39,
-                            value = c(33, 39)
+                            value = c(30, 39)
                         )),
                         mainPanel(plotlyOutput("fifa_data"))
                     )
