@@ -107,11 +107,6 @@ server <- function(input, output) {
         mtcars_plot()
     })
     
-    
-    output$fifa_data <- renderPlotly({
-        fifa_plot()
-    })
-    
     output$download <- downloadHandler(
         filename = function() {
             'Mtcars_Plot.html'
@@ -120,6 +115,10 @@ server <- function(input, output) {
             saveWidget(as_widget(mtcars_plot()), file)
         }
     )
+    
+    output$fifa_data <- renderPlotly({
+        fifa_plot()
+    })
     
 }
 
