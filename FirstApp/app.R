@@ -6,7 +6,7 @@ library(htmlwidgets)
 library(dplyr)
 
 fifa19_data <-
-    read.csv("C:/__Meine_Daten/ErsteShinyApp/ErsteShinyApp/data.csv")
+    read.csv("C:/__MeineDaten/ErsteShinyApp/data.csv")
 
 ui <- fluidPage(theme = shinytheme("superhero"),
                 navbarPage(
