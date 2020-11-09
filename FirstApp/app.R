@@ -2,7 +2,11 @@ library(shiny)
 library(shinythemes)
 library(plotly)
 library(datasets)
-library(webshot)
+library(htmlwidgets)
+library(dplyr)
+
+fifa19_data <-
+    read.csv("C:/__Meine_Daten/ErsteShinyApp/ErsteShinyApp/data.csv")
 
 ui <- fluidPage(theme = shinytheme("superhero"),
                 navbarPage(
@@ -35,8 +39,19 @@ ui <- fluidPage(theme = shinytheme("superhero"),
                     ),
                     tabPanel(
                         "Mtcars Datensatz",
-                        downloadButton("download"),
+                        sidebarPanel(downloadButton("download")),
                         mainPanel(plotlyOutput("mtcars_data"))
+                    ),
+                    tabPanel(
+                        "Spieler Fifa19 Datensatz",
+                        sidebarPanel(sliderInput(
+                            "age",
+                            "Spieleralter:",
+                            min = 16,
+                            max = 39,
+                            value = c(33, 39)
+                        )),
+                        mainPanel(plotlyOutput("fifa_data"))
                     )
                 ))
 
@@ -74,6 +89,16 @@ server <- function(input, output) {
             ))
     })
     
+    fifa_plot <- reactive({
+        plot <- fifa19_data %>%
+            filter(Age %in% input$age &
+                       Nationality == "Germany") %>%
+            plot_ly(x =  ~ Age,
+                    y =  ~ Name) %>%
+            add_markers() %>%
+            layout(title = 'Alter der Spieler in Deutschland')
+    })
+    
     output$iris_data <- renderPlotly({
         iris_plot()
     })
@@ -82,11 +107,17 @@ server <- function(input, output) {
         mtcars_plot()
     })
     
+    
+    output$fifa_data <- renderPlotly({
+        fifa_plot()
+    })
+    
     output$download <- downloadHandler(
-        filename <- 'Plot.png',
+        filename = function() {
+            'Mtcars_Plot.html'
+        },
         content = function(file) {
-            export(p = mtcars_plot(), file = 'TempPlot.png')
-            file.copy('TempPlot.png', file)
+            saveWidget(as_widget(mtcars_plot()), file)
         }
     )
     
