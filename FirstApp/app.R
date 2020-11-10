@@ -4,9 +4,10 @@ library(plotly)
 library(datasets)
 library(htmlwidgets)
 library(dplyr)
+library(RColorBrewer)
 
 fifa19_data <-
-    read.csv("C:/__MeineDaten/ErsteShinyApp/data.csv")
+    read.csv("C:/Users/timwa/Downloads/ErsteShinyApp/ErsteShinyApp/data.csv")
 
 ui <- fluidPage(theme = shinytheme("superhero"),
                 navbarPage(
@@ -44,14 +45,25 @@ ui <- fluidPage(theme = shinytheme("superhero"),
                     ),
                     tabPanel(
                         "Spieler Fifa19 Datensatz",
-                        sidebarPanel(sliderInput(
-                            "age",
-                            "Spieleralter:",
-                            min = 16,
-                            max = 39,
-                            value = c(30, 39)
-                        )),
-                        mainPanel(plotlyOutput("fifa_data"))
+                        sidebarPanel(
+                            sliderInput(
+                                "age",
+                                "Spieleralter:",
+                                min = 16,
+                                max = 39,
+                                value = c(32, 36)
+                            ),
+                            selectInput(
+                                "foot",
+                                "Bevorzugter Fuß:",
+                                c("Rechts" = "Right",
+                                  "Links" = "Left")
+                            )
+                        ),
+                        mainPanel(
+                            "Spieler mit deutscher Staatsangehörigkeit",
+                            plotlyOutput("fifa_data")
+                        )
                     )
                 ))
 
@@ -71,32 +83,53 @@ server <- function(input, output) {
     })
     
     mtcars_plot <- reactive({
-        plot <- plot_ly(
-            x = mtcars[, "wt"],
-            y = mtcars[, "hp"],
-            z = mtcars[, "qsec"],
-            marker = list(
-                color = mtcars$mpg,
-                colorscale = c('#FFE1A1', '#683531'),
-                showscale = TRUE
-            )
-        ) %>%
+        plot <- mtcars %>%
+            select(wt, hp, qsec, mpg) %>%
+            plot_ly(
+                x =  ~ wt,
+                y =  ~ hp,
+                z =  ~ qsec,
+                marker = list(
+                    color = ~ mpg,
+                    colorscale = c("#FFE1A1", "#683531"),
+                    showscale = TRUE
+                )
+            ) %>%
             add_markers() %>%
             layout(scene = list(
-                xaxis = list(title = 'Weight'),
-                yaxis = list(title = 'Horsepower'),
-                zaxis = list(title = 'Mile Time')
+                camera = list(eye = list(
+                    x = 1.5, y = 1.8, z = 1
+                )),
+                xaxis = list(title = "Weight"),
+                yaxis = list(title = "Horsepower"),
+                zaxis = list(title = "Mile Time")
             ))
     })
     
     fifa_plot <- reactive({
         plot <- fifa19_data %>%
-            filter(Age %in% input$age &
-                       Nationality == "Germany") %>%
-            plot_ly(x =  ~ Age,
-                    y =  ~ Name) %>%
-            add_markers() %>%
-            layout(title = 'Alter der Spieler in Deutschland')
+            filter(
+                Age %in% input$age[1]:input$age[2] &
+                    Nationality == "Germany" &
+                    Preferred.Foot == input$foot
+            ) %>%
+            plot_ly(
+                type = 'scatter',
+                mode = 'markers',
+                x =  ~ Age,
+                y =  ~ Name,
+                color =  ~ Club,
+                colors = colorRampPalette(brewer.pal(8, "Set2"))(18),
+                hoverinfo='text',
+                text=~Club,
+                hovertemplate = paste("<b>Name: %{y}</b><br>",
+                                      "Alter: %{x}<br>",
+                                      "Verein: %{text}")
+            ) %>%
+            layout(
+                xaxis = list(title = "", showticklabels = FALSE),
+                yaxis = list(title = "", showticklabels = FALSE)
+            )
     })
     
     output$iris_data <- renderPlotly({
@@ -109,7 +142,7 @@ server <- function(input, output) {
     
     output$download <- downloadHandler(
         filename = function() {
-            'Mtcars_Plot.html'
+            "Mtcars_Plot.html"
         },
         content = function(file) {
             saveWidget(as_widget(mtcars_plot()), file)
