@@ -51,7 +51,7 @@ ui <- fluidPage(theme = shinytheme("superhero"),
                                 "Spieleralter:",
                                 min = 16,
                                 max = 39,
-                                value = c(32, 36)
+                                value = c(30, 36)
                             ),
                             selectInput(
                                 "foot",
